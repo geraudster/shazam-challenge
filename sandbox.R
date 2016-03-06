@@ -16,7 +16,7 @@ inTrain <- createDataPartition(data$idSound, p = 0.8, list = FALSE)
 trainset <- data[inTrain,]
 testset <- data[-inTrain,]
 
-k <- 40
+k <- 30
 clusters <- cclust(trainset[, 2:14], k)
 
 trainset$cluster <- predict(clusters)
@@ -31,9 +31,9 @@ str(trainset.wordsFreqs)
 
 qplot(trainset.wordsFreqs$class)
 set.seed(1234)
-model <- train(class ~ ., trainset.wordsFreqs[,-21], method = 'rf',
+model <- train(class ~ ., trainset.wordsFreqs[,-(k+1)], method = 'rf',
                trControl = trainControl(verboseIter = TRUE),
-               tuneLength = 5)
+               tuneLength = 3)
 
 confusionMatrix(model)
 
