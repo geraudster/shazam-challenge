@@ -63,3 +63,4 @@ close(validationFile)
 validation.predict <- applyModel(validation)
 
 submissionDf <- data.frame(idSound = validation.predict$idSound, class = validation.predict$class)
+write.csv(submissionDf, 'my-submission.csv')
