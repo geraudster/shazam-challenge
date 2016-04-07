@@ -19,7 +19,9 @@ trainset <- data[inTrain,]
 testset <- data[-inTrain,]
 
 k <- 30
-clusters <- cclust(trainset[, 2:14], k)
+system.time(
+  clusters <- cclust(trainset[, 2:14], k)
+)
 
 trainset$cluster <- predict(clusters)
 
@@ -33,9 +35,11 @@ str(trainset.wordsFreqs)
 
 qplot(trainset.wordsFreqs$class)
 set.seed(1234)
-model <- train(class ~ ., trainset.wordsFreqs[,-(k+1)], method = 'rf',
-               trControl = trainControl(verboseIter = TRUE),
-               tuneLength = 3)
+system.time(
+  model <- train(class ~ ., trainset.wordsFreqs[,-(k+1)], method = 'rf',
+                 trControl = trainControl(verboseIter = TRUE),
+                 tuneLength = 3)
+)
 
 confusionMatrix(model)
 
