@@ -12,6 +12,7 @@ library(googleAuthR)
 library(googlesheets)
 library(lubridate)
 library(httr)
+library(radarchart)
 
 source('leaderboard.R')
 
@@ -28,29 +29,73 @@ try(gs_auth(service_token))
 
 doc <- gs_url('https://docs.google.com/spreadsheets/d/1D-T8NGO8gFWqbg2jGi5XPSRARCo03UgOLQYNZRiwz8k/edit?usp=sharing')
 
+
+options(googleAuthR.webapp.client_id = '507215885741-62n9eacivu09h14ldc7rsuqe74gbp8b5.apps.googleusercontent.com',
+        googleAuthR.webapp.client_secret = '_795vWjsJ7hYoQI2JhtkU35m',
+        googleAuthR.scopes.selected = c('https://www.googleapis.com/auth/userinfo.profile'))
+
+getUserInfos <- function() {
+  f <- gar_api_generator('https://www.googleapis.com/oauth2/v1/userinfo',
+                                    'GET',
+                                    data_parse_function = function(x) x$name)
+  f()  
+}
+
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
-   
-  # output$distPlot <- renderPlot({
-  #   
-  #   # generate bins based on input$bins from ui.R
-  #   x    <- faithful[, 2] 
-  #   bins <- seq(min(x), max(x), length.out = input$bins + 1)
-  #   
-  #   # draw the histogram with the specified number of bins
-  #   hist(x, breaks = bins, col = 'darkgray', border = 'white')
-  #   
-  # })
+shinyServer(function(input, output, session) {
   
-  output$score <- renderTable({
+  ## Get auth code from return URL
+  access_token  <- reactiveAccessToken(session)
+  
+  ## Make a loginButton to display using loginOutput
+  output$loginButton <- renderLogin(session, access_token())
+  
+  api_output <- eventReactive(input$submit, {
+    ## with_shiny() wraps your your_api_function to provide the arguments
+    ## requires you to pass "shiny_access_token"
+    
+    username <- with_shiny(getUserInfos, 
+                        shiny_access_token = access_token())
+    print(paste("I'm"), str(username))
+    username
+#    gs_add_row(doc, ws = 'Scores', input = c('Toto', score, now()))
+#    data.frame(Score = score)
+  })
+
+  getScoreReactive <- reactive({
     inFile <- input$file1
     
     if (is.null(inFile))
       return(NULL)
     
-    score = getScore(inFile$datapath)
-    gs_add_row(doc, ws = 'Scores', input = c('Toto', score, now()))
-    data.frame(Score = score)
+    getScore(inFile$datapath)
   })
   
+  output$score <- renderTable({
+    scores <- getScoreReactive()
+    if(is.null(scores)) {
+      return(NULL)
+    }
+    
+    data.frame(Score = scores$Accuracy)
+  })
+
+  output$radar <- renderChartJSRadar({
+    scores <- getScoreReactive()
+    
+    if(is.null(scores)) {
+      return(NULL)
+    }
+    chartJSRadar(scores = scores$ByClass, maxScale = 1, scaleStepWidth = 0.25, responsive = TRUE, maintainAspectRatio = FALSE)
+  })
+  
+  user <- reactive({
+    curUser <- api_output()
+    print('coucou &*****************')
+    curUser
+  })
+  
+  output$userName <- reactive({
+    user()
+  })
 })

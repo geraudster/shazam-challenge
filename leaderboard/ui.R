@@ -8,6 +8,7 @@
 #
 
 library(shiny)
+library(radarchart)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -31,7 +32,15 @@ shinyUI(fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-      tableOutput('score')
+      # loginOutput("loginButton"),
+      h2('Your score: '),
+      tableOutput('score'),
+      h2('Balanced accuracy by class: '),
+      div(
+        chartJSRadarOutput('radar'), width = "200", height = "200"),
+      width = 7
+      # textOutput('userName'),
+      # actionButton('submit', 'Get name')
     )
   )
 ))
