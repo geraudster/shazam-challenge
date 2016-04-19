@@ -7,6 +7,28 @@ data$class <- factor(data$class)
 levels(data$class)
 str(data)
 
+library(dplyr)
+
+plotByClass <- function(dataset) {
+  ggplot(dataset, aes(x = class, fill = class)) +
+    geom_bar(aes(y = (..count..)/sum(..count..))) +
+    coord_flip() +
+    geom_text(aes(y = (..count..)/sum(..count..),
+                  label = paste(round((..count..)/sum(..count..)*100), "%")), stat = 'count') +
+    theme(legend.position="none") +
+    ylab('Ratio')
+}
+
+byIdSound <- group_by(data, idSound)
+plotByClass(byIdSound)
+
+# +
+#   stat_bin(geom = "text",
+#            aes(x=class, label = paste(round((..count..)/sum(..count..)*100), "%")),
+#            vjust = 5)
+#+
+#  scale_y_continuous(labels = percent)
+
 library(reshape2)
 library(rpart)
 library(caret)
@@ -17,6 +39,9 @@ set.seed(1234)
 inTrain <- createDataPartition(data$idSound, p = 0.8, list = FALSE)
 trainset <- data[inTrain,]
 testset <- data[-inTrain,]
+
+plotByClass(trainset)
+plotByClass(testset)
 
 k <- 30
 system.time(
@@ -37,6 +62,13 @@ qplot(trainset.wordsFreqs$class)
 set.seed(1234)
 system.time(
   model <- train(class ~ ., trainset.wordsFreqs[,-(k+1)], method = 'rf',
+                 trControl = trainControl(verboseIter = TRUE),
+                 tuneLength = 3)
+)
+
+set.seed(1234)
+system.time(
+  model <- train(class ~ ., trainset.wordsFreqs[,-(k+1)], method = 'xgbLinear',
                  trControl = trainControl(verboseIter = TRUE),
                  tuneLength = 3)
 )
@@ -67,4 +99,23 @@ close(validationFile)
 validation.predict <- applyModel(validation)
 
 submissionDf <- data.frame(idSound = validation.predict$idSound, class = validation.predict$class)
-write.csv(submissionDf, 'my-submission.csv')
+write.csv(submissionDf, 'my-submission.csv', row.names = FALSE)
+
+
+## Plot spider
+
+accuracies <- confusionMatrix(trimws(merged$classsubmission), trimws(merged$classknown))$byClass[,8] %>%
+  data.frame(class = gsub('Class: ', '', names(.)), score = .)
+
+library(radarchart)
+chartJSRadar(scores = accuracies, maxScale = 1, scaleStepWidth = 0.25)
+
+## build partial submission
+library(plyr)
+library(dplyr)
+partialSubmission <- ldply(levels(submissionDf$class),
+                           function(x) {
+                             submissionDf[first(which(submissionDf$class == x)),]
+                           })
+write.csv(partialSubmission, '../my-submission-partial.csv', row.names = FALSE)
+getScore('../my-submission-partial.csv')
