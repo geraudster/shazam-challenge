@@ -119,3 +119,8 @@ partialSubmission <- ldply(levels(submissionDf$class),
                            })
 write.csv(partialSubmission, '../my-submission-partial.csv', row.names = FALSE)
 getScore('../my-submission-partial.csv')
+
+reorderedSubmission <- submissionDf[sample(1:nrow(submissionDf)),]
+write.csv(reorderedSubmission, '../my-submission-reordered.csv', row.names = FALSE)
+getScore('../my-submission-reordered.csv')
+

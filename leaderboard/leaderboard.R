@@ -11,7 +11,7 @@ getScore <- function(fileName) {
   submission.classes <- read.csv(fileName, header = TRUE, stringsAsFactors = TRUE)
   submission.classes$class <- factor(trimws(submission.classes$class),
                                      levels = known.classes.levels)
-  stopifnot(submission.classes$idSound == known.classes$idSound)
+  stopifnot(setequal(submission.classes$idSound, known.classes$idSound))
   merged <- merge(known.classes, submission.classes, by = 'idSound', suffix = c('known', 'submission'))
 
   # Measure performance
