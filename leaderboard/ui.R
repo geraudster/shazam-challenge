@@ -19,25 +19,34 @@ shinyUI(fluidPage(
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
-      fileInput('file1', 'Choose submission file',
-                accept = c(
-                  'text/csv',
-                  'text/comma-separated-values',
-                  'text/tab-separated-values',
-                  'text/plain',
-                  '.csv',
-                  '.tsv'
-                ))
+      conditionalPanel(condition = '!output.authenticated',
+                       h2('Please login')),
+      conditionalPanel(condition = 'output.authenticated',
+                       p('Hello', textOutput('userName', inline = TRUE))),
+
+      loginOutput('loginButton')
     ),
     
     # Show a plot of the generated distribution
     mainPanel(
       # loginOutput("loginButton"),
-      h2('Your score: '),
-      tableOutput('score'),
-      h2('Balanced accuracy by class: '),
-      div(
-        chartJSRadarOutput('radar'), width = "200", height = "200"),
+      # p(textOutput('condition')),
+      conditionalPanel(condition = 'output.authenticated',
+                       fileInput('file1', 'Choose submission file',
+                                 accept = c(
+                                   'text/csv',
+                                   'text/comma-separated-values',
+                                   'text/tab-separated-values',
+                                   'text/plain',
+                                   '.csv',
+                                   '.tsv'
+                                 )),
+                       conditionalPanel(condition = 'output.showScore',
+                                        h2('Your score: '),
+                                        tableOutput('score'),
+                                        h2('Balanced accuracy by class: '),
+                                        div(
+                                          chartJSRadarOutput('radar'), width = "200", height = "200"))),
       width = 7
       # textOutput('userName'),
       # actionButton('submit', 'Get name')

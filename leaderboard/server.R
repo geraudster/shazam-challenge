@@ -50,10 +50,12 @@ shinyServer(function(input, output, session) {
   ## Make a loginButton to display using loginOutput
   output$loginButton <- renderLogin(session, access_token())
   
-  api_output <- eventReactive(input$submit, {
+  api_output <- eventReactive(access_token, {
     ## with_shiny() wraps your your_api_function to provide the arguments
     ## requires you to pass "shiny_access_token"
-    
+    if(is.null(access_token())) {
+      return(NULL)
+    }
     username <- with_shiny(getUserInfos, 
                         shiny_access_token = access_token())
     print(paste("I'm"), str(username))
@@ -98,4 +100,19 @@ shinyServer(function(input, output, session) {
   output$userName <- reactive({
     user()
   })
+  
+  output$showScore <- reactive({
+    inFile <- input$file1
+    
+    !is.null(inFile)
+  })
+  outputOptions(output, 'showScore', suspendWhenHidden=FALSE)
+
+  output$authenticated <- reactive({
+    currentUser <- api_output()
+    print(paste('Current user is ', currentUser))
+    !is.null(currentUser)
+  })
+  outputOptions(output, 'authenticated', suspendWhenHidden=FALSE)
+  
 })
