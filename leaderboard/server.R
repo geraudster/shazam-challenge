@@ -29,9 +29,9 @@ try(gs_auth(service_token))
 
 doc <- gs_url('https://docs.google.com/spreadsheets/d/1D-T8NGO8gFWqbg2jGi5XPSRARCo03UgOLQYNZRiwz8k/edit?usp=sharing')
 
-
-options(googleAuthR.webapp.client_id = '507215885741-62n9eacivu09h14ldc7rsuqe74gbp8b5.apps.googleusercontent.com',
-        googleAuthR.webapp.client_secret = '_795vWjsJ7hYoQI2JhtkU35m',
+source('google_secret.R')
+options(googleAuthR.webapp.client_id = google_id,
+        googleAuthR.webapp.client_secret = google_secret,
         googleAuthR.scopes.selected = c('https://www.googleapis.com/auth/userinfo.profile'))
 
 getUserInfos <- function() {
