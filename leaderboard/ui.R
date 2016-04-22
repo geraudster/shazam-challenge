@@ -9,6 +9,7 @@
 
 library(shiny)
 library(radarchart)
+library(googleAuthR)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -22,8 +23,8 @@ shinyUI(fluidPage(
       conditionalPanel(condition = '!output.authenticated',
                        h2('Please login')),
       conditionalPanel(condition = 'output.authenticated',
-                       p('Hello', textOutput('userName', inline = TRUE))),
-
+                       p('Hello', textOutput('userName', inline = TRUE)),
+                       textOutput('email')),
       loginOutput('loginButton')
     ),
     
@@ -41,10 +42,12 @@ shinyUI(fluidPage(
                                    '.csv',
                                    '.tsv'
                                  )),
+                       textInput('comment', 'Small submission comment'),
+                       actionButton('submitButton', 'Make submission'),
                        conditionalPanel(condition = 'output.showScore',
                                         h2('Your score: '),
                                         tableOutput('score'),
-                                        h2('Balanced accuracy by class: '),
+                                        # actionLink('showDetail', 'Show detail score'),
                                         div(
                                           chartJSRadarOutput('radar'), width = "200", height = "200"))),
       width = 7

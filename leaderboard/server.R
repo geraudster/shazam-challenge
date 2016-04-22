@@ -29,16 +29,19 @@ try(gs_auth(service_token))
 
 doc <- gs_url('https://docs.google.com/spreadsheets/d/1D-T8NGO8gFWqbg2jGi5XPSRARCo03UgOLQYNZRiwz8k/edit?usp=sharing')
 
-source('google_secret.R')
-options(googleAuthR.webapp.client_id = google_id,
-        googleAuthR.webapp.client_secret = google_secret,
-        googleAuthR.scopes.selected = c('https://www.googleapis.com/auth/userinfo.profile'))
+creds <- jsonlite::fromJSON('google_secret.json')
+options(googleAuthR.webapp.client_id = creds$google_id,
+        googleAuthR.webapp.client_secret = creds$google_secret,
+        googleAuthR.scopes.selected = c('https://www.googleapis.com/auth/userinfo.profile',
+                                        'https://www.googleapis.com/auth/userinfo.email'))
 
 getUserInfos <- function() {
   f <- gar_api_generator('https://www.googleapis.com/oauth2/v1/userinfo',
                                     'GET',
-                                    data_parse_function = function(x) x$name)
-  f()  
+                                    data_parse_function = function(x) {
+                                      list(username = x$name,
+                                           email = x$email)})
+  f()
 }
 
 # Define server logic required to draw a histogram
@@ -50,39 +53,39 @@ shinyServer(function(input, output, session) {
   ## Make a loginButton to display using loginOutput
   output$loginButton <- renderLogin(session, access_token())
   
+  makeReactiveBinding('userInfos')
+  
   api_output <- eventReactive(access_token, {
     ## with_shiny() wraps your your_api_function to provide the arguments
     ## requires you to pass "shiny_access_token"
     if(is.null(access_token())) {
       return(NULL)
     }
-    username <- with_shiny(getUserInfos, 
+    userinfos <- with_shiny(getUserInfos, 
                         shiny_access_token = access_token())
-    print(paste("I'm"), str(username))
-    username
-#    gs_add_row(doc, ws = 'Scores', input = c('Toto', score, now()))
-#    data.frame(Score = score)
+    print(paste("I'm"), str(userinfos$username))
+    userinfos
   })
-
-  getScoreReactive <- reactive({
-    inFile <- input$file1
+  
+  getScoreReactive <- eventReactive(input$submitButton, {
+    isolate(inFile <- input$file1)
     
     if (is.null(inFile))
       return(NULL)
     
-    getScore(inFile$datapath)
-  })
-  
-  output$score <- renderTable({
-    scores <- getScoreReactive()
-    if(is.null(scores)) {
-      return(NULL)
-    }
-    
-    data.frame(Score = scores$Accuracy)
+    isolate(comment <- input$comment)
+    userInfos <- api_output()
+    scores <- getScore(inFile$datapath)
+    gs_add_row(doc, ws = 'Scores', input = data.frame(userInfos$email,
+                                                      as.numeric(scores$Accuracy),
+                                                      now(),
+                                                      comment))
+    scores
   })
 
   output$radar <- renderChartJSRadar({
+    print('In renderChartJSRadar')
+    # input$showDetail
     scores <- getScoreReactive()
     
     if(is.null(scores)) {
@@ -91,19 +94,33 @@ shinyServer(function(input, output, session) {
     chartJSRadar(scores = scores$ByClass, maxScale = 1, scaleStepWidth = 0.25, responsive = TRUE, maintainAspectRatio = FALSE)
   })
   
+  output$score <- renderTable({
+    print('In renderTable')
+    scores <- getScoreReactive()
+    if(is.null(scores)) {
+      return(NULL)
+    }
+
+    data.frame(Score = scores$Accuracy)
+  })
+  
   user <- reactive({
     curUser <- api_output()
-    print('coucou &*****************')
-    curUser
+    curUser$username
   })
   
   output$userName <- reactive({
     user()
   })
   
-  output$showScore <- reactive({
-    inFile <- input$file1
-    
+  output$email <- reactive({
+    curUser <- api_output()
+    curUser$email
+  })
+  
+  output$showScore <- eventReactive(input$submitButton, {
+    isolate(inFile <- input$file1)
+
     !is.null(inFile)
   })
   outputOptions(output, 'showScore', suspendWhenHidden=FALSE)
