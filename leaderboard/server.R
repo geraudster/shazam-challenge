@@ -13,6 +13,7 @@ library(googlesheets)
 library(lubridate)
 library(httr)
 library(radarchart)
+library(dplyr)
 
 source('leaderboard.R')
 
@@ -132,4 +133,13 @@ shinyServer(function(input, output, session) {
   })
   outputOptions(output, 'authenticated', suspendWhenHidden=FALSE)
   
+  output$leaderboardTable <- renderTable({
+    scores <- gs_read(doc, ws = 'Scores')
+    by_user <- group_by(scores, User)
+    scores_by_user <- summarise(by_user, max(Score))
+    results <- scores_by_user[order(scores_by_user$`max(Score)`, decreasing = TRUE)]
+    colnames(results) <- c('User', 'Score')
+    results$User <- paste0(substr(results$User,1, 8), '...')
+    results
+  })
 })

@@ -33,6 +33,9 @@ shinyUI(fluidPage(
       # loginOutput("loginButton"),
       # p(textOutput('condition')),
       conditionalPanel(condition = 'output.authenticated',
+                       h1('Global Leaderboard'),
+                       tableOutput('leaderboardTable'),
+                       h1('Submit'),
                        fileInput('file1', 'Choose submission file',
                                  accept = c(
                                    'text/csv',
