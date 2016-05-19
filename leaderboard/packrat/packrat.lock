@@ -13,10 +13,16 @@ Source: CRAN
 Version: 0.4-1
 Hash: 6524d5c5d30ff74084ac028eeb19eb1b
 
+Package: Matrix
+Source: CRAN
+Version: 1.2-6
+Hash: 6d5b4689f994e2af7e9cc11324c5cbeb
+
 Package: MatrixModels
 Source: CRAN
 Version: 0.4-1
 Hash: 60a5c75e57aae4a0ce76cb7422939aaf
+Requires: Matrix
 
 Package: R6
 Source: CRAN
@@ -37,7 +43,7 @@ Package: RcppEigen
 Source: CRAN
 Version: 0.3.2.8.1
 Hash: d33fa8124f9c3a22f39677f43d8b89a5
-Requires: Rcpp
+Requires: Matrix, Rcpp
 
 Package: SparseM
 Source: CRAN
@@ -64,7 +70,7 @@ Package: caret
 Source: CRAN
 Version: 6.0-68
 Hash: dd5bde39e5d4649f6da763c7edf1a1b2
-Requires: car, foreach, ggplot2, plyr, reshape2
+Requires: car, foreach, ggplot2, nlme, plyr, reshape2
 
 Package: cellranger
 Source: CRAN
@@ -180,7 +186,7 @@ Package: lme4
 Source: CRAN
 Version: 1.1-12
 Hash: 0e8b8b1917b817d7b92a7c4230379977
-Requires: Rcpp, RcppEigen, minqa, nloptr
+Requires: Matrix, Rcpp, RcppEigen, minqa, nlme, nloptr
 
 Package: lubridate
 Source: CRAN
@@ -210,6 +216,11 @@ Version: 0.4.3
 Hash: f96d896947fcaf9b6d0074002e9f4f9d
 Requires: colorspace
 
+Package: nlme
+Source: CRAN
+Version: 3.1-128
+Hash: 72d50aad85f45456d60ded8ee47a8454
+
 Package: nloptr
 Source: CRAN
 Version: 1.0.4
@@ -233,7 +244,7 @@ Package: pbkrtest
 Source: CRAN
 Version: 0.4-6
 Hash: 8117c37e2e3078e3c6465134bac6956e
-Requires: lme4
+Requires: Matrix, lme4
 
 Package: plyr
 Source: CRAN
@@ -251,7 +262,7 @@ Package: quantreg
 Source: CRAN
 Version: 5.21
 Hash: 38c5ff66011d761c2367b18aa456cba6
-Requires: MatrixModels, SparseM
+Requires: Matrix, MatrixModels, SparseM
 
 Package: radarchart
 Source: CRAN
