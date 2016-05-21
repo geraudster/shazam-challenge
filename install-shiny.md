@@ -26,9 +26,10 @@
     apt-key add cran.asc
     echo 'deb http://ftp.igh.cnrs.fr/pub/CRAN/bin/linux/debian jessie-cran3/' > /etc/apt/sources.list.d/cran.list
     aptitude update
-    aptitude -y install r-base gdebi-core
+    aptitude -y install r-base gdebi-core libssl-dev libcurl4-openssl-dev libxml2-dev
     R -e "install.packages('shiny', repos='https://cran.rstudio.com/')"
     wget https://download3.rstudio.org/ubuntu-12.04/x86_64/shiny-server-1.4.2.786-amd64.deb
     gdebi shiny-server-1.4.2.786-amd64.deb
     R -e "install.packages('rmarkdown', repos='https://cran.rstudio.com/')"
+    R -e 'if (!require("devtools")) install.packages("devtools", repos="https://cran.rstudio.com/"); devtools::install_github("rstudio/packrat")'
     
